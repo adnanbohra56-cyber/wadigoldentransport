@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wadi Golden Transport — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#17212b;--muted:#66717c;--line:#dfe5ea;--brand:#c80070;--bg:#f5f7f9;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#111820;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:800}.brand span{color:#ef4a9b}.sub{font-size:12px;color:#b9c1c8}
+main{max-width:1200px;margin:28px auto;padding:0 18px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}
+button{border:0;border-radius:8px;padding:11px 15px;font-weight:700;cursor:pointer}.primary{background:var(--brand);color:#fff}.secondary{background:#eef1f4;color:#17212b}
+.hidden{display:none!important}.muted{color:var(--muted)}.login{max-width:450px;margin:70px auto}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:6px}.full{grid-column:1/-1}
+label{font-size:13px;font-weight:700}input,select,textarea{width:100%;padding:11px;border:1px solid #cfd7de;border-radius:8px;font:inherit}textarea{min-height:80px}
+.actions{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:16px;border:1px solid var(--line);border-radius:12px}.stat b{display:block;font-size:25px;margin-top:4px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px}th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{background:#f8fafb}
+.pill{padding:5px 9px;border-radius:999px;background:#eef1f4;font-size:12px;font-weight:700}.success{background:#e9f7f0}.error{background:#fff0ef;color:#b42318;padding:10px;border-radius:8px;margin:10px 0}.ok{background:#eaf8f1;color:#16794b;padding:10px;border-radius:8px;margin:10px 0}
+@media(max-width:900px){.grid,.stats{grid-template-columns:1fr 1fr}}@media(max-width:600px){.grid,.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">WADI GOLDEN TRANSPORT <span>•</span> ADMIN</div><div class="sub">Since 1976 · LR & Shipment Management</div></div><button id="logout" class="secondary hidden">Sign out</button></header>
+<main>
+<section id="login" class="card login"><h1>Admin Login</h1><p class="muted">Authorized company account only.</p><div id="loginMsg"></div>
+<form id="loginForm"><div class="field"><label>Email</label><input id="email" type="email" required autocomplete="username"></div>
+<div class="field" style="margin-top:12px"><label>Password</label><input id="password" type="password" required autocomplete="current-password"></div>
+<div class="actions"><button class="primary">Sign in</button></div></form></section>
+
+<section id="app" class="hidden">
+<div class="row"><div><h1>Shipment Dashboard</h1><div class="muted">Create an LR once; record each movement separately.</div></div><button id="newLR" class="primary">+ Add New LR</button></div>
+<div class="stats"><div class="stat">Total LRs<b id="total">0</b></div><div class="stat">In Transit<b id="transit">0</b></div><div class="stat">Delivered<b id="delivered">0</b></div><div class="stat">Held / Delayed<b id="held">0</b></div></div>
+<div id="msg"></div>
+
+<section id="formCard" class="card hidden"><div class="row"><div><h2 id="formTitle">Add New LR</h2><div class="muted">LR number remains unchanged through connecting transportation.</div></div><button id="closeForm" class="secondary" type="button">Close</button></div>
+<form id="shipForm" style="margin-top:16px"><input id="sid" type="hidden"><div class="grid">
+<div class="field"><label>LR Number *</label><input id="lr" placeholder="NFC/26/2363" required></div>
+<div class="field"><label>Booking Date *</label><input id="date" type="date" required></div>
+<div class="field"><label>Consignor</label><input id="consignor"></div><div class="field"><label>Consignee</label><input id="consignee"></div>
+<div class="field"><label>Origin</label><input id="origin"></div><div class="field"><label>Destination</label><input id="destination"></div>
+<div class="field"><label>Carrier / Partner</label><input id="carrier" placeholder="NFC"></div><div class="field"><label>Material</label><input id="material"></div>
+<div class="field"><label>Quantity</label><input id="quantity"></div><div class="field"><label>Current Location</label><input id="location"></div>
+<div class="field"><label>Status</label><select id="status"><option>Booked</option><option>In Transit</option><option>Received at Hub</option><option>Out for Delivery</option><option>Delivered</option><option>Held</option><option>Delayed</option></select></div>
+<div class="field"><label>Vehicle Number</label><input id="vehicle" placeholder="MH12AB1234"></div>
+<div class="field full"><label>Remarks</label><textarea id="remarks"></textarea></div></div>
+<div class="actions"><button class="primary">Save LR</button></div></form></section>
+
+<section class="card"><div class="row"><h2>LR Shipments</h2><input id="search" style="max-width:350px" placeholder="Search LR, consignor, consignee..."></div>
+<div class="tablewrap"><table><thead><tr><th>LR</th><th>From</th><th>To</th><th>Location</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+
+<section id="movement" class="card hidden"><div class="row"><div><h2>Update Movement</h2><div id="moveLR" class="muted"></div></div><button id="closeMove" class="secondary">Close</button></div>
+<form id="moveForm" style="margin-top:16px"><input id="moveSid" type="hidden"><div class="grid">
+<div class="field"><label>Status *</label><select id="moveStatus"><option>Booked</option><option>In Transit</option><option>Received at Hub</option><option>Out for Delivery</option><option>Delivered</option><option>Held</option><option>Delayed</option></select></div>
+<div class="field"><label>Location *</label><input id="moveLocation" required></div><div class="field"><label>Vehicle Number</label><input id="moveVehicle"></div>
+<div class="field"><label>Event Time</label><input id="moveTime" type="datetime-local"></div><div class="field full"><label>Remarks</label><textarea id="moveRemarks"></textarea></div></div>
+<div class="actions"><button class="primary">Record Movement</button></div></form><div id="history"></div></section>
+</section></main>
+
+<script>
+const URL='https://elfzqhpkywdgvqghtlya.supabase.co';
+const KEY='sb_publishable_NsssJboX43vP6sTRC5ORsQ_8UlYdb-7';
+const db=supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function message(text,type='error'){ $('msg').innerHTML=text?`<div class="${type}">${esc(text)}</div>`:''; }
+function showApp(){ $('login').classList.add('hidden');$('app').classList.remove('hidden');$('logout').classList.remove('hidden');load(); }
+async function start(){const {data}=await db.auth.getSession();data.session?showApp():$('login').classList.remove('hidden');}
+$('loginForm').onsubmit=async e=>{e.preventDefault();$('loginMsg').innerHTML='';const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error){$('loginMsg').innerHTML=`<div class="error">${esc(error.message)}</div>`;return}showApp()};
+$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
+let data=[];
+async function load(){const {data:d,error}=await db.from('shipments').select('*').order('updated_at',{ascending:false});if(error)return message(error.message);data=d||[];stats();render();}
+function stats(){ $('total').textContent=data.length;$('transit').textContent=data.filter(x=>x.status==='In Transit').length;$('delivered').textContent=data.filter(x=>x.status==='Delivered').length;$('held').textContent=data.filter(x=>['Held','Delayed'].includes(x.status)).length; }
+function render(){const q=$('search').value.toLowerCase();const list=data.filter(x=>!q||[x.lr_number,x.consignor,x.consignee,x.origin,x.destination,x.current_location].some(v=>String(v??'').toLowerCase().includes(q)));$('rows').innerHTML=list.map(x=>`<tr><td><b>${esc(x.lr_number)}</b></td><td>${esc(x.origin)}</td><td>${esc(x.destination)}</td><td>${esc(x.current_location)}</td><td><span class="pill ${x.status==='Delivered'?'success':''}">${esc(x.status)}</span></td><td>${x.updated_at?new Date(x.updated_at).toLocaleString():''}</td><td><button class="secondary" onclick="edit('${x.id}')">Edit</button> <button class="primary" onclick="move('${x.id}')">Movement</button></td></tr>`).join('')||'<tr><td colspan="7">No shipments found.</td></tr>'}
+$('search').oninput=render;$('newLR').onclick=()=>{ $('shipForm').reset();$('sid').value='';$('formTitle').textContent='Add New LR';$('date').value=new Date().toISOString().slice(0,10);$('status').value='Booked';$('formCard').classList.remove('hidden');scrollTo(0,0)};$('closeForm').onclick=()=>$('formCard').classList.add('hidden');
+window.edit=id=>{const x=data.find(a=>a.id===id);if(!x)return;$('sid').value=x.id;$('lr').value=x.lr_number||'';$('date').value=x.booking_date||'';$('consignor').value=x.consignor||'';$('consignee').value=x.consignee||'';$('origin').value=x.origin||'';$('destination').value=x.destination||'';$('carrier').value=x.carrier||'';$('material').value=x.material||'';$('quantity').value=x.quantity||'';$('location').value=x.current_location||'';$('status').value=x.status||'Booked';$('remarks').value=x.remarks||'';$('formTitle').textContent='Edit LR';$('formCard').classList.remove('hidden');scrollTo(0,0)};
+$('shipForm').onsubmit=async e=>{e.preventDefault();const id=$('sid').value;const p={lr_number:$('lr').value.trim(),booking_date:$('date').value,consignor:$('consignor').value.trim(),consignee:$('consignee').value.trim(),origin:$('origin').value.trim(),destination:$('destination').value.trim(),carrier:$('carrier').value.trim(),material:$('material').value.trim(),quantity:$('quantity').value.trim(),current_location:$('location').value.trim(),status:$('status').value,remarks:$('remarks').value.trim()};const r=id?await db.from('shipments').update(p).eq('id',id):await db.from('shipments').insert(p);if(r.error)return message(r.error.message);message(id?'LR updated.':'LR created.','ok');$('formCard').classList.add('hidden');await load()};
+window.move=async id=>{const x=data.find(a=>a.id===id);$('moveSid').value=id;$('moveLR').textContent='LR: '+x.lr_number;$('moveStatus').value=x.status||'In Transit';$('moveLocation').value=x.current_location||'';$('moveVehicle').value='';$('moveRemarks').value='';const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());$('moveTime').value=d.toISOString().slice(0,16);$('movement').classList.remove('hidden');await history(id);$('movement').scrollIntoView({behavior:'smooth'})};
+async function history(id){const r=await db.from('tracking_events').select('*').eq('shipment_id',id).order('event_time',{ascending:false});if(r.error){$('history').innerHTML='<div class="error">'+esc(r.error.message)+'</div>';return}$('history').innerHTML='<h3>Movement History</h3>'+((r.data||[]).map(e=>`<div class="card"><b>${esc(e.status)}</b> · ${esc(e.location)} ${e.vehicle_number?'· '+esc(e.vehicle_number):''}<div class="muted">${e.event_time?new Date(e.event_time).toLocaleString():''}</div><div>${esc(e.remarks)}</div></div>`).join('')||'<p class="muted">No movement events yet.</p>')};
+$('moveForm').onsubmit=async e=>{e.preventDefault();const id=$('moveSid').value;const ev={shipment_id:id,status:$('moveStatus').value,location:$('moveLocation').value.trim(),remarks:$('moveRemarks').value.trim(),event_time:new Date($('moveTime').value).toISOString(),vehicle_number:$('moveVehicle').value.trim()};const a=await db.from('tracking_events').insert(ev);if(a.error)return message(a.error.message);const b=await db.from('shipments').update({current_location:ev.location,status:ev.status,remarks:ev.remarks}).eq('id',id);if(b.error)return message(b.error.message);message('Movement recorded.','ok');await load();await history(id)};
+$('closeMove').onclick=()=>$('movement').classList.add('hidden');db.auth.onAuthStateChange((_e,s)=>{if(s)showApp()});start();
+</script>
+</body></html>
