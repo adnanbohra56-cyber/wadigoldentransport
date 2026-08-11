@@ -41,7 +41,7 @@ label{font-size:13px;font-weight:700}input,select,textarea{width:100%;padding:11
 <div class="field"><label>Origin</label><input id="origin"></div><div class="field"><label>Destination</label><input id="destination"></div>
 <div class="field"><label>Carrier / Partner</label><input id="carrier" placeholder="NFC"></div><div class="field"><label>Material</label><input id="material"></div>
 <div class="field"><label>Quantity</label><input id="quantity"></div><div class="field"><label>Current Location</label><input id="location"></div>
-<div class="field"><label>Status</label><select id="status"><option>Booked</option><option>In Transit</option><option>Received at Hub</option><option>Out for Delivery</option><option>Delivered</option><option>Held</option><option>Delayed</option></select></div>
+<div class="field"><label>Status</label><select id="status"><option>Booked</option><option>In Transit</option><option>Arrived at Hub</option><option>Out for Delivery</option><option>Delivered</option><option>Held</option><option>Delayed</option></select></div>
 <div class="field"><label>Vehicle Number</label><input id="vehicle" placeholder="MH12AB1234"></div>
 <div class="field full"><label>Remarks</label><textarea id="remarks"></textarea></div></div>
 <div class="actions"><button class="primary">Save LR</button></div></form></section>
@@ -51,7 +51,7 @@ label{font-size:13px;font-weight:700}input,select,textarea{width:100%;padding:11
 
 <section id="movement" class="card hidden"><div class="row"><div><h2>Update Movement</h2><div id="moveLR" class="muted"></div></div><button id="closeMove" class="secondary">Close</button></div>
 <form id="moveForm" style="margin-top:16px"><input id="moveSid" type="hidden"><div class="grid">
-<div class="field"><label>Status *</label><select id="moveStatus"><option>Booked</option><option>In Transit</option><option>Received at Hub</option><option>Out for Delivery</option><option>Delivered</option><option>Held</option><option>Delayed</option></select></div>
+<div class="field"><label>Status *</label><select id="moveStatus"><option>Booked</option><option>In Transit</option><option>Arrived at Hub</option><option>Out for Delivery</option><option>Delivered</option><option>Held</option><option>Delayed</option></select></div>
 <div class="field"><label>Location *</label><input id="moveLocation" required></div><div class="field"><label>Vehicle Number</label><input id="moveVehicle"></div>
 <div class="field"><label>Event Time</label><input id="moveTime" type="datetime-local"></div><div class="field full"><label>Remarks</label><textarea id="moveRemarks"></textarea></div></div>
 <div class="actions"><button class="primary">Record Movement</button></div></form><div id="history"></div></section>
