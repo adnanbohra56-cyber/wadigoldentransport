@@ -58,9 +58,9 @@ label{font-size:13px;font-weight:700}input,select,textarea{width:100%;padding:11
 </section></main>
 
 <script>
-const URL='https://elfzqhpkywdgvqghtlya.supabase.co';
+const SUPABASE_URL='https://elfzqhpkywdgvqghtlya.supabase.co';
 const KEY='sb_publishable_NsssJboX43vP6sTRC5ORsQ_8UlYdb-7';
-const db=supabase.createClient(URL,KEY);
+const db=supabase.createClient(SUPABASE_URL,KEY);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 function message(text,type='error'){ $('msg').innerHTML=text?`<div class="${type}">${esc(text)}</div>`:''; }
